@@ -1,0 +1,37 @@
+# Local production-like stack: API + PostgreSQL + Redis.
+#   cp .env.example .env   (fill in secrets)
+#   docker compose up --build
+services:
+  app:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://tutor:tutor@db:5432/tutor
+      REDIS_URL: redis://redis:6379/0
+      AUTO_CREATE_TABLES: "false"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: tutor
+      POSTGRES_PASSWORD: tutor
+      POSTGRES_DB: tutor
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tutor"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+
+volumes:
+  pgdata:

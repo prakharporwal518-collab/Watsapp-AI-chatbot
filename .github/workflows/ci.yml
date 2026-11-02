@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tutor_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt numpy scikit-learn
+      - name: Lint
+        run: ruff check .
+      - name: Tests (SQLite)
+        run: pytest -q
+      - name: Tests (PostgreSQL)
+        env:
+          TEST_DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/tutor_test
+        run: pytest -q
+      - name: Migrations apply cleanly and match models
+        env:
+          PGPASSWORD: postgres
+          DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/tutor_migrations
+        run: |
+          psql -h localhost -U postgres -c "CREATE DATABASE tutor_migrations"
+          alembic upgrade head
+          alembic check
+          alembic downgrade base
