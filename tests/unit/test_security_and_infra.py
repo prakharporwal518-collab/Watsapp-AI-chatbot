@@ -74,6 +74,15 @@ class TestKVStore:
 
 
 class TestSettings:
+    def test_pasted_secrets_are_trimmed(self):
+        # A trailing newline from a dashboard text box must not break token comparisons.
+        s = Settings(_env_file=None, whatsapp_verify_token="abc-r5\n", whatsapp_app_secret="  sec \r\n",
+                     whatsapp_access_token="EAA123\n", database_url=" postgres://u:p@h/db\n")
+        assert s.whatsapp_verify_token == "abc-r5"
+        assert s.whatsapp_app_secret == "sec"
+        assert s.whatsapp_access_token == "EAA123"
+        assert s.database_url == "postgresql+asyncpg://u:p@h/db"
+
     def test_postgres_url_normalised(self):
         s = Settings(_env_file=None, database_url="postgres://u:p@host/db")
         assert s.database_url == "postgresql+asyncpg://u:p@host/db"
