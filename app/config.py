@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     whatsapp_phone_number_id: str = ""
     whatsapp_verify_token: str = ""
     whatsapp_app_secret: str = ""
-    whatsapp_api_version: str = "v21.0"
+    whatsapp_api_version: str = "v25.0"
     whatsapp_api_base_url: str = "https://graph.facebook.com"
     whatsapp_reminder_template: str = ""  # approved template name used outside the 24h window
     whatsapp_template_language: str = "en"
