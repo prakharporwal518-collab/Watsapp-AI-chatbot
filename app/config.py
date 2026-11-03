@@ -62,6 +62,13 @@ class Settings(BaseSettings):
     enable_scheduler: bool = False  # in-process reminders (alternative: n8n / cron hitting /internal/jobs)
     dev_chat_enabled: bool = True  # /dev/chat endpoint for local testing (disabled in production)
 
+    @field_validator("*", mode="before")
+    @classmethod
+    def _strip_whitespace(cls, v):
+        # Values pasted into hosting dashboards often pick up an invisible space or newline,
+        # which silently breaks token comparisons (e.g. Meta's webhook verify token → 403).
+        return v.strip() if isinstance(v, str) else v
+
     @field_validator("database_url")
     @classmethod
     def _normalise_db_url(cls, v: str) -> str:
