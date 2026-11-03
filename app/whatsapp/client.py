@@ -73,7 +73,7 @@ class WhatsAppCloudClient:
         self,
         access_token: str,
         phone_number_id: str,
-        api_version: str = "v21.0",
+        api_version: str = "v25.0",
         base_url: str = "https://graph.facebook.com",
         template_language: str = "en",
         http_client: httpx.AsyncClient | None = None,
